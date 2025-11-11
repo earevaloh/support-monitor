@@ -1,0 +1,86 @@
+/**
+ * Tipos de respuesta de la API de Jira
+ */
+
+export interface JiraIssue {
+    id: string;
+    key: string;
+    fields: JiraIssueFields;
+}
+
+export interface JiraIssueFields {
+    summary: string;
+    description?: string | JiraDescription;
+    status: JiraStatus;
+    priority: JiraPriority;
+    assignee?: JiraUser;
+    reporter: JiraUser;
+    created: string;
+    updated: string;
+    resolutiondate?: string;
+    labels: string[];
+    customfield_10020?: JiraSprint[]; // Sprint field
+    customfield_10016?: number; // Story points
+    [key: string]: unknown;
+}
+
+export interface JiraDescription {
+    type: string;
+    version: number;
+    content: unknown[];
+}
+
+export interface JiraStatus {
+    id: string;
+    name: string;
+    statusCategory: {
+        id: number;
+        key: string;
+        colorName: string;
+        name: string;
+    };
+}
+
+export interface JiraPriority {
+    id: string;
+    name: string;
+    iconUrl: string;
+}
+
+export interface JiraUser {
+    accountId: string;
+    displayName: string;
+    emailAddress?: string;
+    avatarUrls?: {
+        "48x48": string;
+    };
+}
+
+export interface JiraSprint {
+    id: number;
+    name: string;
+    state: "active" | "future" | "closed";
+    startDate?: string;
+    endDate?: string;
+    goal?: string;
+}
+
+export interface JiraSearchResponse {
+    expand: string;
+    startAt: number;
+    maxResults: number;
+    total: number;
+    issues: JiraIssue[];
+}
+
+export interface JiraSprintResponse {
+    id: number;
+    self: string;
+    state: string;
+    name: string;
+    startDate?: string;
+    endDate?: string;
+    completeDate?: string;
+    originBoardId: number;
+    goal?: string;
+}
