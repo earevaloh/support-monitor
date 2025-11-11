@@ -17,7 +17,8 @@ export class JiraTicketAdapter implements ITicketRepository {
     constructor(projectKey?: string) {
         this.client = new JiraClient();
         // Usar el PROJECT_KEY del .env o el parámetro proporcionado
-        this.projectKey = projectKey || import.meta.env.VITE_JIRA_PROJECT_KEY || "TIK";
+        this.projectKey =
+            projectKey || import.meta.env.VITE_JIRA_PROJECT_KEY || "TIK";
     }
 
     /**
@@ -152,24 +153,24 @@ export class JiraSprintAdapter implements ISprintRepository {
         // Crear períodos virtuales de las últimas 4 semanas
         const sprints: Sprint[] = [];
         const now = new Date();
-        
+
         for (let i = 0; i < 4; i++) {
             const endDate = new Date(now);
-            endDate.setDate(endDate.getDate() - (i * 7));
-            
+            endDate.setDate(endDate.getDate() - i * 7);
+
             const startDate = new Date(endDate);
             startDate.setDate(startDate.getDate() - 7);
-            
+
             sprints.push(
                 new SprintEntity({
                     id: `week-${i}`,
-                    name: `Semana ${i === 0 ? 'Actual' : `Hace ${i}`}`,
+                    name: `Semana ${i === 0 ? "Actual" : `Hace ${i}`}`,
                     startDate,
                     endDate,
                 })
             );
         }
-        
+
         return sprints;
     }
 
@@ -194,8 +195,6 @@ export class JiraSprintAdapter implements ISprintRepository {
      */
     async getRecentClosed(limit: number): Promise<Sprint[]> {
         const sprints = await this.getAll();
-        return sprints
-            .filter((s) => s.isClosed)
-            .slice(0, limit);
+        return sprints.filter((s) => s.isClosed).slice(0, limit);
     }
 }

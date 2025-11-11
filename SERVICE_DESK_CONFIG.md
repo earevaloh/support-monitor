@@ -5,27 +5,31 @@ Este documento explica cómo configurar Support Monitor para trabajar con **Jira
 ## 🔧 Diferencias entre Jira y Service Desk
 
 ### Jira Software (Tradicional)
-- Usa **Boards** con sprints
-- Tiene backlog y planificación de sprints
-- Orientado a desarrollo ágil
+
+-   Usa **Boards** con sprints
+-   Tiene backlog y planificación de sprints
+-   Orientado a desarrollo ágil
 
 ### Jira Service Desk
-- Usa **Colas (Queues)** para organizar tickets
-- No tiene sprints tradicionales
-- Orientado a soporte y atención al cliente
-- Usa SLA y métricas de tiempo de respuesta
+
+-   Usa **Colas (Queues)** para organizar tickets
+-   No tiene sprints tradicionales
+-   Orientado a soporte y atención al cliente
+-   Usa SLA y métricas de tiempo de respuesta
 
 ## 📋 Configuración del Proyecto
 
 Tu proyecto está en:
+
 ```
 https://webtrackdev.atlassian.net/jira/servicedesk/projects/TIK/queues/custom/1
 ```
 
 De esta URL extraemos:
-- **Dominio**: `webtrackdev.atlassian.net`
-- **Project Key**: `TIK`
-- **Queue ID**: `1` (cola personalizada)
+
+-   **Dominio**: `webtrackdev.atlassian.net`
+-   **Project Key**: `TIK`
+-   **Queue ID**: `1` (cola personalizada)
 
 ## 🔑 Variables de Entorno
 
@@ -91,24 +95,24 @@ Los tickets en Service Desk tienen campos específicos:
 
 ```typescript
 interface ServiceDeskTicket {
-  key: string;              // TIK-123
-  summary: string;          // Título
-  description: string;      // Descripción
-  status: string;           // Open, In Progress, Closed, etc.
-  priority: string;         // Low, Medium, High, Highest
-  reporter: User;           // Usuario que creó el ticket
-  assignee: User | null;    // Agente asignado
-  created: Date;            // Fecha de creación
-  updated: Date;            // Última actualización
-  resolved: Date | null;    // Fecha de resolución
-  
-  // Campos específicos de Service Desk
-  requestType: string;      // Tipo de solicitud
-  satisfaction: number;     // Calificación del cliente (1-5)
-  sla: {
-    timeToFirstResponse: number;  // Minutos
-    timeToResolution: number;     // Minutos
-  };
+    key: string; // TIK-123
+    summary: string; // Título
+    description: string; // Descripción
+    status: string; // Open, In Progress, Closed, etc.
+    priority: string; // Low, Medium, High, Highest
+    reporter: User; // Usuario que creó el ticket
+    assignee: User | null; // Agente asignado
+    created: Date; // Fecha de creación
+    updated: Date; // Última actualización
+    resolved: Date | null; // Fecha de resolución
+
+    // Campos específicos de Service Desk
+    requestType: string; // Tipo de solicitud
+    satisfaction: number; // Calificación del cliente (1-5)
+    sla: {
+        timeToFirstResponse: number; // Minutos
+        timeToResolution: number; // Minutos
+    };
 }
 ```
 
@@ -117,58 +121,69 @@ interface ServiceDeskTicket {
 Los KPIs se calculan basados en métricas de soporte:
 
 ### 1. First Response Time (FRT)
-- ⏱️ Tiempo desde creación hasta primera respuesta
-- 🎯 Meta: < 2 horas
-- 📈 Se calcula con: `firstResponseTime` del campo SLA
+
+-   ⏱️ Tiempo desde creación hasta primera respuesta
+-   🎯 Meta: < 2 horas
+-   📈 Se calcula con: `firstResponseTime` del campo SLA
 
 ### 2. Time to Resolve (TTR)
-- ⏱️ Tiempo desde creación hasta resolución
-- 🎯 Meta: < 24 horas
-- 📈 Se calcula con: `timeToResolution` del campo SLA
+
+-   ⏱️ Tiempo desde creación hasta resolución
+-   🎯 Meta: < 24 horas
+-   📈 Se calcula con: `timeToResolution` del campo SLA
 
 ### 3. SLA Compliance
-- ✅ % de tickets resueltos dentro del SLA
-- 🎯 Meta: ≥ 90%
-- 📈 Se calcula con: `breachTime` del campo SLA
+
+-   ✅ % de tickets resueltos dentro del SLA
+-   🎯 Meta: ≥ 90%
+-   📈 Se calcula con: `breachTime` del campo SLA
 
 ### 4. Customer Satisfaction (CSAT)
-- ⭐ Promedio de calificaciones de clientes
-- 🎯 Meta: ≥ 4 estrellas (de 5)
-- 📈 Se calcula con: campo `satisfaction`
+
+-   ⭐ Promedio de calificaciones de clientes
+-   🎯 Meta: ≥ 4 estrellas (de 5)
+-   📈 Se calcula con: campo `satisfaction`
 
 ### 5. First Contact Resolution (FCR)
-- ✅ % de tickets resueltos en primer contacto
-- 🎯 Meta: ≥ 60%
-- 📈 Se calcula contando tickets con 1 sola respuesta
+
+-   ✅ % de tickets resueltos en primer contacto
+-   🎯 Meta: ≥ 60%
+-   📈 Se calcula contando tickets con 1 sola respuesta
 
 ## 🔍 Consultas JQL Útiles
 
 ### Tickets Abiertos
+
 ```jql
 project = TIK AND status NOT IN (Closed, Resolved)
 ```
 
 ### Tickets SLA Vencido
+
 ```jql
 project = TIK AND "Time to resolution" > 0
 ```
 
 ### Tickets de Alta Prioridad
+
 ```jql
 project = TIK AND priority = Highest AND status NOT IN (Closed, Resolved)
 ```
 
 ### Tickets por Agente
+
 ```jql
 project = TIK AND assignee = "earevalo@webtrackgps.net"
 ```
 
 ### Tickets del Mes Actual
+
 ```jql
 project = TIK AND created >= startOfMonth() ORDER BY created DESC
 ```
 
 ### Tickets Resueltos Hoy
+
 ```jql
 project = TIK AND resolved >= startOfDay() ORDER BY resolved DESC
 ```
@@ -176,26 +191,31 @@ project = TIK AND resolved >= startOfDay() ORDER BY resolved DESC
 ## 🛠️ API Endpoints de Service Desk
 
 ### Obtener Tickets
+
 ```
 GET /rest/api/3/search?jql=project=TIK
 ```
 
 ### Obtener Ticket Individual
+
 ```
 GET /rest/api/3/issue/TIK-123
 ```
 
 ### Obtener Colas del Proyecto
+
 ```
 GET /rest/servicedeskapi/servicedesk/{serviceDeskId}/queue
 ```
 
 ### Obtener Request Types
+
 ```
 GET /rest/servicedeskapi/servicedesk/{serviceDeskId}/requesttype
 ```
 
 ### Obtener SLA Info
+
 ```
 GET /rest/api/3/issue/{issueKey}/sla
 ```
@@ -203,6 +223,7 @@ GET /rest/api/3/issue/{issueKey}/sla
 ## 🚀 Próximos Pasos
 
 ### 1. Verificar Conexión
+
 ```bash
 npm run dev
 ```
@@ -212,9 +233,10 @@ Deberías ver los tickets del proyecto TIK en el dashboard.
 ### 2. Personalizar Filtros
 
 Edita `src/adapters/jira/JiraAdapter.ts` para ajustar:
-- Campos específicos de tu Service Desk
-- Request types personalizados
-- SLA específicos de tu configuración
+
+-   Campos específicos de tu Service Desk
+-   Request types personalizados
+-   SLA específicos de tu configuración
 
 ### 3. Agregar Campos Personalizados
 
@@ -242,22 +264,24 @@ toTicket(jiraIssue: JiraIssue): Ticket {
 ### Error: "CORS"
 
 Si estás en desarrollo local y tienes errores CORS:
+
 1. Usar proxy en `vite.config.ts`
 2. O configurar CORS en Jira (solo administradores)
 
 ### Tickets no tienen SLA
 
 Si no ves datos de SLA:
+
 1. Verifica que tu Service Desk tiene SLA configurados
 2. Los campos de SLA pueden variar por configuración
 3. Consulta con tu admin de Jira
 
 ## 📚 Referencias
 
-- [Jira Service Desk API](https://developer.atlassian.com/cloud/jira/service-desk/rest/intro/)
-- [Jira Platform REST API](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/)
-- [JQL (Jira Query Language)](https://www.atlassian.com/software/jira/guides/expand-jira/jql)
-- [SLA en Service Desk](https://support.atlassian.com/jira-service-management-cloud/docs/configure-slas/)
+-   [Jira Service Desk API](https://developer.atlassian.com/cloud/jira/service-desk/rest/intro/)
+-   [Jira Platform REST API](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/)
+-   [JQL (Jira Query Language)](https://www.atlassian.com/software/jira/guides/expand-jira/jql)
+-   [SLA en Service Desk](https://support.atlassian.com/jira-service-management-cloud/docs/configure-slas/)
 
 ## 💡 Consejos
 
