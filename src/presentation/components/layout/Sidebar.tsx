@@ -38,9 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     // Calcular tickets activos (no resueltos ni cerrados)
     const activeTicketsCount = tickets.filter(
-        (ticket) =>
-            ticket.status !== "resolved" &&
-            ticket.status !== "closed"
+        (ticket) => ticket.status !== "resolved" && ticket.status !== "closed"
     ).length;
 
     // Items del menú

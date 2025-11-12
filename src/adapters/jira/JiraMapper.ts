@@ -89,8 +89,67 @@ export class JiraMapper {
     private static extractDescription(description: unknown): string {
         if (!description) return "";
         if (typeof description === "string") return description;
+        
         // Si es un objeto de Jira (ADF format), extraer el texto
-        return "Descripción en formato ADF";
+        if (typeof description === "object" && description !== null) {
+            return this.parseADF(description);
+        }
+        
+        return "";
+    }
+
+    /**
+     * Parsea el formato ADF (Atlassian Document Format) a texto plano
+     */
+    private static parseADF(adf: unknown): string {
+        if (!adf || typeof adf !== "object") return "";
+        
+        const adfDoc = adf as { content?: unknown[] };
+        if (!adfDoc.content) return "";
+
+        const extractText = (node: unknown): string => {
+            if (!node || typeof node !== "object") return "";
+            
+            const n = node as { 
+                text?: string; 
+                content?: unknown[]; 
+                type?: string 
+            };
+
+            // Si el nodo tiene texto directo
+            if (n.text) {
+                return n.text;
+            }
+
+            // Si el nodo tiene contenido, procesarlo recursivamente
+            if (n.content && Array.isArray(n.content)) {
+                return n.content
+                    .map((child: unknown) => {
+                        const text = extractText(child);
+                        
+                        // Agregar saltos de línea según el tipo de nodo
+                        if (n.type === "paragraph" && text) {
+                            return text + "\n";
+                        }
+                        if (n.type === "heading" && text) {
+                            return text + "\n";
+                        }
+                        if (n.type === "listItem" && text) {
+                            return "• " + text + "\n";
+                        }
+                        if (n.type === "codeBlock" && text) {
+                            return "```\n" + text + "\n```\n";
+                        }
+                        
+                        return text;
+                    })
+                    .join("");
+            }
+
+            return "";
+        };
+
+        return extractText(adfDoc).trim();
     }
 
     /**
