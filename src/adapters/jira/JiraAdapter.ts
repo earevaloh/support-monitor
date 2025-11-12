@@ -49,7 +49,10 @@ export class JiraTicketAdapter implements ITicketRepository {
 
             // Verificar si la respuesta tiene la estructura correcta
             if (!response.issues || !Array.isArray(response.issues)) {
-                console.error("❌ Error: response.issues es undefined o no es un array. Respuesta completa:", response);
+                console.error(
+                    "❌ Error: response.issues es undefined o no es un array. Respuesta completa:",
+                    response
+                );
                 break;
             }
 
