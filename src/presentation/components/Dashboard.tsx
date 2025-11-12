@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useTicketsStore } from "@presentation/store/ticketsStore";
-import { useSprintsStore } from "@presentation/store/sprintsStore";
 import { KPIGrid } from "./kpis/KPIGrid";
 import { DateRangePicker } from "./DateRangePicker";
 import { Panel, Loader } from "rsuite";
 import { DateRange } from "rsuite/esm/DateRangePicker";
 import { toast } from "react-toastify";
-import { startOfWeek, endOfDay } from "date-fns";
+import {
+    startOfWeek,
+    endOfDay,
+    format,
+    isSameDay,
+    startOfMonth,
+    endOfMonth,
+    subMonths,
+    subWeeks,
+    startOfDay,
+} from "date-fns";
+import { es } from "date-fns/locale";
 
 /**
  * Componente principal del Dashboard
@@ -18,7 +28,6 @@ export const Dashboard: React.FC = () => {
         fetchTickets,
         fetchTicketsByDateRange,
     } = useTicketsStore();
-    const { activeSprint, fetchActiveSprint } = useSprintsStore();
 
     // Estado para el rango de fechas seleccionado
     // Por defecto: Esta semana (lunes a hoy)
@@ -35,13 +44,10 @@ export const Dashboard: React.FC = () => {
             try {
                 // Si hay un rango de fechas, cargar tickets por ese rango
                 if (dateRange && dateRange[0] && dateRange[1]) {
-                    await Promise.all([
-                        fetchTicketsByDateRange(dateRange[0], dateRange[1]),
-                        fetchActiveSprint(),
-                    ]);
+                    await fetchTicketsByDateRange(dateRange[0], dateRange[1]);
                 } else {
                     // Si no, cargar todos los tickets
-                    await Promise.all([fetchTickets(), fetchActiveSprint()]);
+                    await fetchTickets();
                 }
             } catch (error) {
                 toast.error("Error al cargar datos del dashboard");
@@ -49,11 +55,72 @@ export const Dashboard: React.FC = () => {
         };
 
         loadData();
-    }, [dateRange, fetchTickets, fetchTicketsByDateRange, fetchActiveSprint]);
+    }, [dateRange, fetchTickets, fetchTicketsByDateRange]);
 
     // Manejador para cambio de rango de fechas
     const handleDateRangeChange = (value: DateRange | null) => {
         setDateRange(value);
+    };
+
+    // Función para obtener el texto del rango de fechas
+    const getDateRangeText = (): string => {
+        if (!dateRange || !dateRange[0] || !dateRange[1]) {
+            return "Seleccionar período";
+        }
+
+        const start = dateRange[0];
+        const end = dateRange[1];
+        const today = new Date();
+
+        // Esta Semana
+        const thisWeekStart = startOfWeek(today, { weekStartsOn: 1 });
+        if (
+            isSameDay(start, thisWeekStart) &&
+            isSameDay(end, endOfDay(today))
+        ) {
+            return "Esta Semana";
+        }
+
+        // Última Semana
+        const lastWeekStart = startOfWeek(subWeeks(today, 1), {
+            weekStartsOn: 1,
+        });
+        const lastWeekEnd = new Date(thisWeekStart.getTime() - 1);
+        if (
+            isSameDay(start, lastWeekStart) &&
+            isSameDay(end, endOfDay(lastWeekEnd))
+        ) {
+            return "Última Semana";
+        }
+
+        // Este Mes
+        const thisMonthStart = startOfMonth(today);
+        if (
+            isSameDay(start, thisMonthStart) &&
+            isSameDay(end, endOfDay(today))
+        ) {
+            return "Este Mes";
+        }
+
+        // Mes Pasado
+        const lastMonthStart = startOfMonth(subMonths(today, 1));
+        const lastMonthEnd = endOfMonth(subMonths(today, 1));
+        if (isSameDay(start, lastMonthStart) && isSameDay(end, lastMonthEnd)) {
+            return "Mes Pasado";
+        }
+
+        // Todo
+        const allTimeStart = startOfDay(new Date(2025, 0, 1));
+        if (isSameDay(start, allTimeStart) && isSameDay(end, endOfDay(today))) {
+            return "Todos los Tickets";
+        }
+
+        // Rango personalizado
+        return `${format(start, "dd/MM/yyyy", { locale: es })} - ${format(
+            end,
+            "dd/MM/yyyy",
+            { locale: es }
+        )}`;
     };
 
     if (ticketsLoading) {
@@ -76,34 +143,20 @@ export const Dashboard: React.FC = () => {
                             Support Monitor
                         </h1>
                         <p className="text-gray-500 dark:text-gray-400 mt-1">
-                            Dashboard de métricas y KPIs de soporte
+                            {getDateRangeText()}
                         </p>
                     </div>
 
-                    <div className="flex flex-col md:flex-row gap-4 md:items-center">
-                        {/* Selector de rango de fechas */}
-                        <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Rango de fechas
-                            </label>
-                            <div className="w-full md:w-80">
-                                <DateRangePicker
-                                    value={dateRange}
-                                    onChange={handleDateRangeChange}
-                                />
-                            </div>
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Período
+                        </label>
+                        <div className="w-full md:w-80">
+                            <DateRangePicker
+                                value={dateRange}
+                                onChange={handleDateRangeChange}
+                            />
                         </div>
-
-                        {activeSprint && (
-                            <div className="text-right">
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Sprint Activo
-                                </p>
-                                <p className="text-lg font-semibold text-primary-600 dark:text-primary-400">
-                                    {activeSprint.name}
-                                </p>
-                            </div>
-                        )}
                     </div>
                 </div>
 
@@ -122,7 +175,9 @@ export const Dashboard: React.FC = () => {
 
                     <Panel bordered className="bg-white dark:bg-gray-800">
                         <div className="text-center">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Abiertos</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Abiertos
+                            </p>
                             <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                                 {
                                     tickets.filter(
@@ -137,7 +192,9 @@ export const Dashboard: React.FC = () => {
 
                     <Panel bordered className="bg-white dark:bg-gray-800">
                         <div className="text-center">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Resueltos</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Resueltos
+                            </p>
                             <p className="text-3xl font-bold text-green-600 dark:text-green-400">
                                 {
                                     tickets.filter(
@@ -152,7 +209,9 @@ export const Dashboard: React.FC = () => {
 
                     <Panel bordered className="bg-white dark:bg-gray-800">
                         <div className="text-center">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Escalados</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Escalados
+                            </p>
                             <p className="text-3xl font-bold text-red-600 dark:text-red-400">
                                 {tickets.filter((t) => t.escalated).length}
                             </p>

@@ -6,6 +6,8 @@ import {
     useLocation,
     useNavigate,
 } from "react-router-dom";
+import { CustomProvider } from "rsuite";
+import { useThemeStore } from "@presentation/store/themeStore";
 import { Layout } from "@presentation/components/layout";
 import { Dashboard } from "./presentation/components/Dashboard";
 import {
@@ -64,10 +66,14 @@ const AppRoutes: React.FC = () => {
  * Componente raíz de la aplicación
  */
 const App: React.FC = () => {
+    const { theme } = useThemeStore();
+
     return (
-        <BrowserRouter>
-            <AppRoutes />
-        </BrowserRouter>
+        <CustomProvider theme={theme}>
+            <BrowserRouter>
+                <AppRoutes />
+            </BrowserRouter>
+        </CustomProvider>
     );
 };
 
