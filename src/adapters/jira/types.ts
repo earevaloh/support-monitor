@@ -65,6 +65,13 @@ export interface JiraSprint {
     goal?: string;
 }
 
+// Respuesta del endpoint /rest/api/3/search/jql (nuevo con tokens)
+export interface JiraSearchJqlResponse {
+    issues: JiraIssue[];
+    nextPageToken?: string; // Token para la siguiente página
+}
+
+// Respuesta del endpoint /rest/api/3/search (legacy, aún funciona)
 export interface JiraSearchResponse {
     expand: string;
     startAt: number;

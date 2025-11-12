@@ -5,7 +5,7 @@ import { Sprint, SprintEntity } from "@core/entities/Sprint";
 import { TicketFilters } from "@core/types";
 import { JiraClient } from "@infrastructure/http/JiraClient";
 import { JiraMapper } from "./JiraMapper";
-import { JiraSearchResponse } from "./types";
+import { JiraSearchJqlResponse, JiraIssue } from "./types";
 
 /**
  * Adaptador que implementa el repositorio de tickets usando la API de Jira Service Desk
@@ -23,16 +23,58 @@ export class JiraTicketAdapter implements ITicketRepository {
 
     /**
      * Obtiene todos los tickets del proyecto desde enero 2025
+     * Usa el nuevo sistema de paginación con tokens de Jira Cloud
      */
     async getAll(): Promise<Ticket[]> {
         const jql = `project = ${this.projectKey} AND created >= "2025-01-01" ORDER BY created DESC`;
-        const response = await this.client.search<JiraSearchResponse>(
-            jql,
-            ["*all"],
-            0,
-            1000
-        );
-        return response.issues.map((issue) => JiraMapper.toTicket(issue));
+        let allTickets: Ticket[] = [];
+        let nextPageToken: string | undefined = undefined;
+        const maxResults = 100;
+        let pageCount = 0;
+
+        if (import.meta.env.DEV) {
+            console.log(
+                "🔍 Iniciando carga de tickets con paginación por tokens..."
+            );
+        }
+
+        do {
+            const response: JiraSearchJqlResponse =
+                await this.client.searchWithToken<JiraSearchJqlResponse>(
+                    jql,
+                    ["*all"],
+                    maxResults,
+                    nextPageToken
+                );
+
+            // Verificar si la respuesta tiene la estructura correcta
+            if (!response.issues || !Array.isArray(response.issues)) {
+                console.error("❌ Error: response.issues es undefined o no es un array. Respuesta completa:", response);
+                break;
+            }
+
+            const tickets = response.issues.map((issue: JiraIssue) =>
+                JiraMapper.toTicket(issue as never)
+            );
+            allTickets = [...allTickets, ...tickets];
+            pageCount++;
+
+            if (import.meta.env.DEV) {
+                console.log(
+                    `📊 Página ${pageCount}: ${tickets.length} tickets | Total acumulado: ${allTickets.length}`
+                );
+            }
+
+            nextPageToken = response.nextPageToken;
+        } while (nextPageToken);
+
+        if (import.meta.env.DEV) {
+            console.log(
+                `✅ Carga completa: ${allTickets.length} tickets obtenidos`
+            );
+        }
+
+        return allTickets;
     }
 
     /**
@@ -58,48 +100,58 @@ export class JiraTicketAdapter implements ITicketRepository {
      * Obtiene tickets filtrados
      */
     async getFiltered(filters: TicketFilters): Promise<Ticket[]> {
-        let jql = `project = ${this.projectKey}`;
+        try {
+            let jql = `project = ${this.projectKey}`;
 
-        // Agregar filtros de status
-        if (filters.status && filters.status.length > 0) {
-            const statusFilters = filters.status.map((s) => `"${s}"`).join(",");
-            jql += ` AND status IN (${statusFilters})`;
+            if (filters.sprint) jql += ` AND sprint = ${filters.sprint}`;
+            if (filters.assignee && filters.assignee.length > 0) {
+                jql += ` AND assignee IN (${filters.assignee
+                    .map((a) => `"${a}"`)
+                    .join(",")})`;
+            }
+            if (filters.status && filters.status.length > 0) {
+                jql += ` AND status IN (${filters.status
+                    .map((s) => `"${s}"`)
+                    .join(",")})`;
+            }
+            if (filters.priority && filters.priority.length > 0) {
+                jql += ` AND priority IN (${filters.priority
+                    .map((p) => `"${p}"`)
+                    .join(",")})`;
+            }
+
+            // Aplicar filtro de fecha: solo tickets desde 2025-01-01
+            jql += ` AND created >= "2025-01-01"`;
+
+            jql += " ORDER BY created DESC";
+
+            console.log("Filtered JQL:", jql);
+
+            let allTickets: Ticket[] = [];
+            let nextPageToken: string | undefined = undefined;
+
+            do {
+                const response: JiraSearchJqlResponse =
+                    await this.client.searchWithToken<JiraSearchJqlResponse>(
+                        jql,
+                        ["*all"],
+                        100,
+                        nextPageToken
+                    );
+                allTickets = [
+                    ...allTickets,
+                    ...response.issues.map((issue: JiraIssue) =>
+                        JiraMapper.toTicket(issue as never)
+                    ),
+                ];
+                nextPageToken = response.nextPageToken;
+            } while (nextPageToken);
+
+            return allTickets;
+        } catch (error) {
+            console.error("Error fetching filtered tickets:", error);
+            return [];
         }
-
-        // Agregar filtros de prioridad
-        if (filters.priority && filters.priority.length > 0) {
-            const priorityFilters = filters.priority
-                .map((p) => `"${p}"`)
-                .join(",");
-            jql += ` AND priority IN (${priorityFilters})`;
-        }
-
-        // Agregar filtro de assignee
-        if (filters.assignee && filters.assignee.length > 0) {
-            const assigneeFilters = filters.assignee
-                .map((a) => `"${a}"`)
-                .join(",");
-            jql += ` AND assignee IN (${assigneeFilters})`;
-        }
-
-        // Agregar filtro de fechas
-        if (filters.dateRange) {
-            const startDate = filters.dateRange.start
-                .toISOString()
-                .split("T")[0];
-            const endDate = filters.dateRange.end.toISOString().split("T")[0];
-            jql += ` AND created >= "${startDate}" AND created <= "${endDate}"`;
-        }
-
-        jql += " ORDER BY created DESC";
-
-        const response = await this.client.search<JiraSearchResponse>(
-            jql,
-            ["*all"],
-            0,
-            1000
-        );
-        return response.issues.map((issue) => JiraMapper.toTicket(issue));
     }
 
     /**
@@ -108,32 +160,72 @@ export class JiraTicketAdapter implements ITicketRepository {
      * ya que Service Desk no usa sprints tradicionales
      */
     async getBySprint(_sprintId: string): Promise<Ticket[]> {
-        // En Service Desk, interpretamos el sprintId como un rango de fechas
-        // Retornamos tickets desde enero 2025
-        const jql = `project = ${this.projectKey} AND created >= "2025-01-01" ORDER BY created DESC`;
-        const response = await this.client.search<JiraSearchResponse>(
-            jql,
-            ["*all"],
-            0,
-            1000
-        );
-        return response.issues.map((issue) => JiraMapper.toTicket(issue));
+        try {
+            const jql = `project = ${this.projectKey} ORDER BY created DESC`;
+            console.log("Sprint JQL:", jql);
+
+            let allTickets: Ticket[] = [];
+            let nextPageToken: string | undefined = undefined;
+
+            do {
+                const response: JiraSearchJqlResponse =
+                    await this.client.searchWithToken<JiraSearchJqlResponse>(
+                        jql,
+                        ["*all"],
+                        100,
+                        nextPageToken
+                    );
+                allTickets = [
+                    ...allTickets,
+                    ...response.issues.map((issue: JiraIssue) =>
+                        JiraMapper.toTicket(issue as never)
+                    ),
+                ];
+                nextPageToken = response.nextPageToken;
+            } while (nextPageToken);
+
+            return allTickets;
+        } catch (error) {
+            console.error("Error fetching sprint tickets:", error);
+            return [];
+        }
     }
 
     /**
      * Obtiene tickets por rango de fechas
      */
     async getByDateRange(start: Date, end: Date): Promise<Ticket[]> {
-        const startDate = start.toISOString().split("T")[0];
-        const endDate = end.toISOString().split("T")[0];
-        const jql = `project = ${this.projectKey} AND created >= "${startDate}" AND created <= "${endDate}" ORDER BY created DESC`;
-        const response = await this.client.search<JiraSearchResponse>(
-            jql,
-            ["*all"],
-            0,
-            1000
-        );
-        return response.issues.map((issue) => JiraMapper.toTicket(issue));
+        try {
+            const startDate = start.toISOString().split("T")[0];
+            const endDate = end.toISOString().split("T")[0];
+            const jql = `project = ${this.projectKey} AND created >= "${startDate}" AND created <= "${endDate}" ORDER BY created DESC`;
+            console.log("Date Range JQL:", jql);
+
+            let allTickets: Ticket[] = [];
+            let nextPageToken: string | undefined = undefined;
+
+            do {
+                const response: JiraSearchJqlResponse =
+                    await this.client.searchWithToken<JiraSearchJqlResponse>(
+                        jql,
+                        ["*all"],
+                        100,
+                        nextPageToken
+                    );
+                allTickets = [
+                    ...allTickets,
+                    ...response.issues.map((issue: JiraIssue) =>
+                        JiraMapper.toTicket(issue as never)
+                    ),
+                ];
+                nextPageToken = response.nextPageToken;
+            } while (nextPageToken);
+
+            return allTickets;
+        } catch (error) {
+            console.error("Error fetching tickets by date range:", error);
+            return [];
+        }
     }
 }
 

@@ -31,22 +31,24 @@ export class JiraClient extends HttpClient {
     }
 
     /**
-     * Realiza una búsqueda JQL en Jira
-     * Usa el nuevo endpoint /rest/api/3/search/jql (el anterior /rest/api/3/search está deprecado)
+     * Realiza una búsqueda JQL usando el nuevo endpoint con paginación por tokens
+     * Endpoint: /rest/api/3/search/jql
      */
-    async search<T>(
+    async searchWithToken<T>(
         jql: string,
         fields: string[] = ["*all"],
-        startAt = 0,
-        maxResults = 1000
+        maxResults = 100,
+        nextPageToken?: string
     ): Promise<T> {
-        // Usar GET en lugar de POST para evitar problemas con XSRF
         const params = new URLSearchParams({
             jql,
             fields: fields.join(","),
-            startAt: startAt.toString(),
             maxResults: maxResults.toString(),
         });
+
+        if (nextPageToken) {
+            params.append("nextPageToken", nextPageToken);
+        }
 
         return this.get<T>(`/rest/api/3/search/jql?${params}`);
     }
