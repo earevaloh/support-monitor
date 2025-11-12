@@ -17,5 +17,37 @@ export default defineConfig({
     server: {
         port: 3000,
         open: true,
+        proxy: {
+            "/api/jira": {
+                target: "https://webtrackdev.atlassian.net",
+                changeOrigin: true,
+                secure: true,
+                rewrite: (path) => path.replace(/^\/api\/jira/, ""),
+                configure: (proxy) => {
+                    proxy.on("proxyReq", (proxyReq, req) => {
+                        // Headers XSRF requeridos por Jira Cloud
+                        proxyReq.setHeader("X-Atlassian-Token", "no-check");
+                        proxyReq.setHeader(
+                            "X-Requested-With",
+                            "XMLHttpRequest"
+                        );
+
+                        // Preservar autenticación y Content-Type
+                        if (req.headers.authorization) {
+                            proxyReq.setHeader(
+                                "Authorization",
+                                req.headers.authorization
+                            );
+                        }
+                        if (req.headers["content-type"]) {
+                            proxyReq.setHeader(
+                                "Content-Type",
+                                req.headers["content-type"]
+                            );
+                        }
+                    });
+                },
+            },
+        },
     },
 });

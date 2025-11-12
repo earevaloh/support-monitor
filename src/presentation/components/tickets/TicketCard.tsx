@@ -44,7 +44,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, onClick }) => {
                 {/* Header */}
                 <div className="flex justify-between items-start">
                     <div className="flex items-center space-x-2">
-                        <span className="text-sm font-mono font-semibold text-primary-600">
+                        <span className="text-sm font-mono font-semibold text-primary-600 dark:text-primary-400">
                             {ticket.key}
                         </span>
                         <Badge
@@ -59,12 +59,12 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, onClick }) => {
                 </div>
 
                 {/* Summary */}
-                <h3 className="text-base font-medium text-gray-900 line-clamp-2">
+                <h3 className="text-base font-medium text-gray-900 dark:text-white line-clamp-2">
                     {ticket.summary}
                 </h3>
 
                 {/* Metadata */}
-                <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+                <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400">
                     {ticket.assignee && (
                         <Whisper
                             placement="top"
@@ -102,13 +102,13 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, onClick }) => {
                         {ticket.labels.slice(0, 3).map((label) => (
                             <span
                                 key={label}
-                                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
+                                className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
                             >
                                 {label}
                             </span>
                         ))}
                         {ticket.labels.length > 3 && (
-                            <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
+                            <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
                                 +{ticket.labels.length - 3}
                             </span>
                         )}
@@ -116,9 +116,9 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, onClick }) => {
                 )}
 
                 {/* SLA & Indicators */}
-                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
                     <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500">SLA:</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">SLA:</span>
                         <div className="flex">
                             {[...Array(5)].map((_, i) => (
                                 <span
@@ -126,7 +126,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, onClick }) => {
                                     className={
                                         i < ticket.slaCompliance
                                             ? "text-yellow-400"
-                                            : "text-gray-300"
+                                            : "text-gray-300 dark:text-gray-600"
                                     }
                                 >
                                     ⭐

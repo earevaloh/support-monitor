@@ -22,15 +22,15 @@ export class JiraTicketAdapter implements ITicketRepository {
     }
 
     /**
-     * Obtiene todos los tickets del proyecto
+     * Obtiene todos los tickets del proyecto desde enero 2025
      */
     async getAll(): Promise<Ticket[]> {
-        const jql = `project = ${this.projectKey} ORDER BY created DESC`;
+        const jql = `project = ${this.projectKey} AND created >= "2025-01-01" ORDER BY created DESC`;
         const response = await this.client.search<JiraSearchResponse>(
             jql,
             ["*all"],
             0,
-            100
+            1000
         );
         return response.issues.map((issue) => JiraMapper.toTicket(issue));
     }
@@ -47,7 +47,9 @@ export class JiraTicketAdapter implements ITicketRepository {
             }>(id);
             return JiraMapper.toTicket(response as never);
         } catch (error) {
-            console.error(`Error fetching ticket ${id}:`, error);
+            if (import.meta.env.DEV) {
+                console.error(`Error fetching ticket ${id}:`, error);
+            }
             return null;
         }
     }
@@ -95,7 +97,7 @@ export class JiraTicketAdapter implements ITicketRepository {
             jql,
             ["*all"],
             0,
-            100
+            1000
         );
         return response.issues.map((issue) => JiraMapper.toTicket(issue));
     }
@@ -107,13 +109,13 @@ export class JiraTicketAdapter implements ITicketRepository {
      */
     async getBySprint(_sprintId: string): Promise<Ticket[]> {
         // En Service Desk, interpretamos el sprintId como un rango de fechas
-        // Por ahora, retornamos los tickets más recientes
-        const jql = `project = ${this.projectKey} ORDER BY created DESC`;
+        // Retornamos tickets desde enero 2025
+        const jql = `project = ${this.projectKey} AND created >= "2025-01-01" ORDER BY created DESC`;
         const response = await this.client.search<JiraSearchResponse>(
             jql,
             ["*all"],
             0,
-            100
+            1000
         );
         return response.issues.map((issue) => JiraMapper.toTicket(issue));
     }
@@ -129,7 +131,7 @@ export class JiraTicketAdapter implements ITicketRepository {
             jql,
             ["*all"],
             0,
-            100
+            1000
         );
         return response.issues.map((issue) => JiraMapper.toTicket(issue));
     }

@@ -106,19 +106,19 @@ body {
 
 /* Clases utilitarias personalizadas */
 .card {
-    @apply bg-white rounded-lg shadow-card p-4;
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-card p-4;
 }
 
 .card-hover {
-    @apply transition-shadow duration-200 hover:shadow-card-hover;
+    @apply transition-shadow duration-200 hover:shadow-card-hover dark:hover:shadow-gray-700;
 }
 
 .btn-primary {
-    @apply bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors;
+    @apply bg-primary-600 dark:bg-primary-700 text-white px-4 py-2 rounded-md hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors;
 }
 
 .btn-secondary {
-    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors;
+    @apply bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors;
 }
 
 .badge {
@@ -126,17 +126,17 @@ body {
 }
 
 .badge-success {
-    @apply bg-success-light text-green-900;
+    @apply bg-success-light dark:bg-green-700 text-green-900 dark:text-green-100;
 }
 
 .badge-warning {
-    @apply bg-warning-light text-orange-900;
+    @apply bg-warning-light dark:bg-orange-700 text-orange-900 dark:text-orange-100;
 }
 
 .badge-error {
-    @apply bg-error-light text-red-900;
+    @apply bg-error-light dark:bg-red-700 text-red-900 dark:text-red-100;
 }
 
 .badge-critical {
-    @apply bg-critical-main text-white;
+    @apply bg-critical-main dark:bg-red-800 text-white;
 }

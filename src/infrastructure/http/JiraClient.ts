@@ -5,7 +5,13 @@ import { HttpClient } from "./HttpClient";
  */
 export class JiraClient extends HttpClient {
     constructor() {
-        const baseURL = import.meta.env.VITE_JIRA_BASE_URL || "";
+        // En desarrollo, usar el proxy de Vite para evitar CORS
+        // En producción, usar la URL directa de Jira
+        const isDevelopment = import.meta.env.DEV;
+        const baseURL = isDevelopment
+            ? "/api/jira" // Proxy local
+            : import.meta.env.VITE_JIRA_BASE_URL || "";
+
         const email = import.meta.env.VITE_JIRA_EMAIL || "";
         const apiToken = import.meta.env.VITE_JIRA_API_TOKEN || "";
 
@@ -16,25 +22,33 @@ export class JiraClient extends HttpClient {
             headers: {
                 Authorization: `Basic ${auth}`,
                 Accept: "application/json",
+                "Content-Type": "application/json",
+                // Headers necesarios para evitar XSRF check failed
+                "X-Atlassian-Token": "no-check",
+                "X-Requested-With": "XMLHttpRequest",
             },
         });
     }
 
     /**
      * Realiza una búsqueda JQL en Jira
+     * Usa el nuevo endpoint /rest/api/3/search/jql (el anterior /rest/api/3/search está deprecado)
      */
     async search<T>(
         jql: string,
         fields: string[] = ["*all"],
         startAt = 0,
-        maxResults = 50
+        maxResults = 1000
     ): Promise<T> {
-        return this.post<T>("/rest/api/3/search", {
+        // Usar GET en lugar de POST para evitar problemas con XSRF
+        const params = new URLSearchParams({
             jql,
-            fields,
-            startAt,
-            maxResults,
+            fields: fields.join(","),
+            startAt: startAt.toString(),
+            maxResults: maxResults.toString(),
         });
+
+        return this.get<T>(`/rest/api/3/search/jql?${params}`);
     }
 
     /**

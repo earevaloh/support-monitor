@@ -70,7 +70,7 @@ export const KPICard: React.FC<KPICardProps> = ({ kpi, showTrend = false }) => {
             <div className="flex flex-col space-y-2">
                 {/* Header */}
                 <div className="flex justify-between items-start">
-                    <h3 className="text-sm font-medium text-gray-600">
+                    <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300">
                         {kpi.name}
                     </h3>
                     <span className={`badge badge-${kpi.status}`}>
@@ -80,18 +80,18 @@ export const KPICard: React.FC<KPICardProps> = ({ kpi, showTrend = false }) => {
 
                 {/* Valor principal */}
                 <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-bold text-gray-900">
+                    <span className="text-3xl font-bold text-gray-900 dark:text-white">
                         {formatValue()}
                     </span>
                     {showTrend && kpi.trend && getTrendIcon()}
                 </div>
 
                 {/* Descripción */}
-                <p className="text-xs text-gray-500">{kpi.description}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{kpi.description}</p>
 
                 {/* Metadata */}
                 {kpi.dataPoints && (
-                    <div className="text-xs text-gray-400 pt-2 border-t">
+                    <div className="text-xs text-gray-400 dark:text-gray-500 pt-2 border-t border-gray-200 dark:border-gray-700">
                         Basado en {kpi.dataPoints} tickets
                     </div>
                 )}

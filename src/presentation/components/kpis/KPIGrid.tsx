@@ -27,7 +27,7 @@ export const KPIGrid: React.FC = () => {
 
     if (kpis.length === 0) {
         return (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                 <p>No hay datos disponibles para calcular KPIs</p>
                 <p className="text-sm mt-2">
                     Carga tickets primero para ver los KPIs

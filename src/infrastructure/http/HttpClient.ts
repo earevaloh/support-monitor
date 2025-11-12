@@ -24,33 +24,18 @@ export class HttpClient {
      * Configura interceptores para manejo de requests y responses
      */
     private setupInterceptors(): void {
-        // Request interceptor
-        this.client.interceptors.request.use(
-            (config) => {
-                // Aquí se puede agregar logging, tokens, etc.
-                console.log(
-                    `[HTTP] ${config.method?.toUpperCase()} ${config.url}`
-                );
-                return config;
-            },
-            (error) => {
-                console.error("[HTTP] Request error:", error);
-                return Promise.reject(error);
-            }
-        );
-
-        // Response interceptor
+        // Response interceptor para manejo de errores
         this.client.interceptors.response.use(
-            (response) => {
-                console.log(`[HTTP] Response: ${response.status}`);
-                return response;
-            },
+            (response) => response,
             (error) => {
-                console.error(
-                    "[HTTP] Response error:",
-                    error.response?.status,
-                    error.message
-                );
+                // Solo loguear errores en desarrollo
+                if (import.meta.env.DEV) {
+                    console.error(
+                        "[HTTP Error]:",
+                        error.response?.status,
+                        error.message
+                    );
+                }
                 return Promise.reject(error);
             }
         );
