@@ -1,6 +1,14 @@
 import React from "react";
 import { Ticket } from "@core/entities/Ticket";
-import { Drawer, Badge, Panel, Tag, Divider, Button, ButtonToolbar } from "rsuite";
+import {
+    Drawer,
+    Badge,
+    Panel,
+    Tag,
+    Divider,
+    Button,
+    ButtonToolbar,
+} from "rsuite";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import ExportIcon from "@rsuite/icons/Export";
@@ -21,7 +29,10 @@ export const TicketDetailDrawer: React.FC<TicketDetailDrawerProps> = ({
 }) => {
     if (!ticket) return null;
 
-    const statusColors: Record<string, "blue" | "orange" | "yellow" | "green" | "cyan" | "red" | "violet"> = {
+    const statusColors: Record<
+        string,
+        "blue" | "orange" | "yellow" | "green" | "cyan" | "red" | "violet"
+    > = {
         open: "blue",
         in_progress: "orange",
         pending: "yellow",
@@ -37,7 +48,10 @@ export const TicketDetailDrawer: React.FC<TicketDetailDrawerProps> = ({
         closed: "Cerrado",
     };
 
-    const priorityColors: Record<string, "blue" | "orange" | "yellow" | "green" | "cyan" | "red" | "violet"> = {
+    const priorityColors: Record<
+        string,
+        "blue" | "orange" | "yellow" | "green" | "cyan" | "red" | "violet"
+    > = {
         lowest: "cyan",
         low: "blue",
         medium: "yellow",
@@ -69,7 +83,9 @@ export const TicketDetailDrawer: React.FC<TicketDetailDrawerProps> = ({
 
     // Función para obtener la URL del ticket en Jira
     const getJiraUrl = () => {
-        const jiraBaseUrl = import.meta.env.VITE_JIRA_BASE_URL || "https://webtrackdev.atlassian.net";
+        const jiraBaseUrl =
+            import.meta.env.VITE_JIRA_BASE_URL ||
+            "https://webtrackdev.atlassian.net";
         return `${jiraBaseUrl}/browse/${ticket.key}`;
     };
 
