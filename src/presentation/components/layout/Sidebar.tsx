@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useThemeStore } from "@presentation/store/themeStore";
+import { useTicketsStore } from "@presentation/store/ticketsStore";
 
 /**
  * Interfaz para items del menú
@@ -29,10 +30,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onNavigate,
 }) => {
     const { sidebarCollapsed, sidebarMode } = useThemeStore();
+    const { tickets } = useTicketsStore();
     const [isHovered, setIsHovered] = useState(false);
 
     // Determinar si el sidebar debe estar expandido
     const isExpanded = sidebarMode === "hover" ? isHovered : !sidebarCollapsed;
+
+    // Calcular tickets activos (no resueltos ni cerrados)
+    const activeTicketsCount = tickets.filter(
+        (ticket) =>
+            ticket.status !== "resolved" &&
+            ticket.status !== "closed"
+    ).length;
 
     // Items del menú
     const menuItems: MenuItem[] = [
@@ -60,7 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             id: "tickets",
             label: "Tickets",
             path: "/tickets",
-            badge: 5,
+            badge: activeTicketsCount,
             icon: (
                 <svg
                     className="w-6 h-6"
