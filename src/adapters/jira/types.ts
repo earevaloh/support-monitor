@@ -91,3 +91,20 @@ export interface JiraSprintResponse {
     originBoardId: number;
     goal?: string;
 }
+
+// Tipos para comentarios y actividad
+export interface JiraComment {
+    id: string;
+    author: JiraUser;
+    body: string | JiraDescription;
+    created: string;
+    updated: string;
+    updateAuthor: JiraUser;
+}
+
+export interface JiraCommentsResponse {
+    startAt: number;
+    maxResults: number;
+    total: number;
+    comments: JiraComment[];
+}

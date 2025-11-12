@@ -78,4 +78,11 @@ export class JiraClient extends HttpClient {
     async getBoardSprints<T>(boardId: string): Promise<T> {
         return this.get<T>(`/rest/agile/1.0/board/${boardId}/sprint`);
     }
+
+    /**
+     * Obtiene los comentarios de un issue
+     */
+    async getIssueComments<T>(issueKey: string): Promise<T> {
+        return this.get<T>(`/rest/api/3/issue/${issueKey}/comment`);
+    }
 }
