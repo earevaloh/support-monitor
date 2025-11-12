@@ -77,6 +77,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
             ranges={predefinedRanges}
             placeholder="Seleccionar rango de fechas"
             format="dd/MM/yyyy"
+            placement="bottomEnd"
             locale={{
                 sunday: "Do",
                 monday: "Lu",
