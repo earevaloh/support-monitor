@@ -140,3 +140,17 @@ body {
 .badge-critical {
     @apply bg-critical-main dark:bg-red-800 text-white;
 }
+
+/* Estilos para tabla de tickets */
+.rs-table-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.rs-table-row:hover {
+    background-color: rgba(33, 150, 243, 0.05) !important;
+}
+
+.dark .rs-table-row:hover {
+    background-color: rgba(33, 150, 243, 0.1) !important;
+}
