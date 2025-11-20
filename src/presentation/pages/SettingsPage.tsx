@@ -22,12 +22,7 @@ import EyeSlashIcon from "@rsuite/icons/legacy/EyeSlash";
  * Ajustes de la aplicación, preferencias de usuario, etc.
  */
 export const SettingsPage: React.FC = () => {
-    const {
-        theme,
-        toggleTheme,
-        sidebarMode,
-        setSidebarMode,
-    } = useThemeStore();
+    const { theme, toggleTheme, sidebarMode, setSidebarMode } = useThemeStore();
     const { tickets } = useTicketsStore();
 
     // Estados para configuración de Jira
@@ -97,11 +92,7 @@ export const SettingsPage: React.FC = () => {
             {/* Apariencia */}
             <Panel
                 bordered
-                header={
-                    <h2 className="text-lg font-semibold">
-                        Apariencia
-                    </h2>
-                }
+                header={<h2 className="text-lg font-semibold">Apariencia</h2>}
                 className="bg-white dark:bg-gray-800"
             >
                 <div className="space-y-6">
@@ -182,20 +173,13 @@ export const SettingsPage: React.FC = () => {
                         <h2 className="text-lg font-semibold">
                             Conexión con Jira
                         </h2>
-                        <Badge
-                            content="Conectado"
-                            color="green"
-                        />
+                        <Badge content="Conectado" color="green" />
                     </div>
                 }
                 className="bg-white dark:bg-gray-800"
             >
                 {configSaved && (
-                    <Message
-                        showIcon
-                        type="success"
-                        className="mb-4"
-                    >
+                    <Message showIcon type="success" className="mb-4">
                         Configuración guardada correctamente
                     </Message>
                 )}
@@ -244,11 +228,7 @@ export const SettingsPage: React.FC = () => {
                             <InputGroup.Button
                                 onClick={() => setShowApiToken(!showApiToken)}
                             >
-                                {showApiToken ? (
-                                    <EyeSlashIcon />
-                                ) : (
-                                    <EyeIcon />
-                                )}
+                                {showApiToken ? <EyeSlashIcon /> : <EyeIcon />}
                             </InputGroup.Button>
                         </InputGroup>
                         <Form.HelpText>
@@ -303,7 +283,10 @@ export const SettingsPage: React.FC = () => {
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                     <p className="font-medium mb-2">Estado de la conexión:</p>
                     <ul className="space-y-1 ml-4">
-                        <li>✓ URL configurada: {jiraConfig.baseUrl || "No configurada"}</li>
+                        <li>
+                            ✓ URL configurada:{" "}
+                            {jiraConfig.baseUrl || "No configurada"}
+                        </li>
                         <li>✓ Tickets cargados: {tickets.length}</li>
                         <li>✓ Última actualización: Hace pocos minutos</li>
                     </ul>
@@ -314,9 +297,7 @@ export const SettingsPage: React.FC = () => {
             <Panel
                 bordered
                 header={
-                    <h2 className="text-lg font-semibold">
-                        Notificaciones
-                    </h2>
+                    <h2 className="text-lg font-semibold">Notificaciones</h2>
                 }
                 className="bg-white dark:bg-gray-800"
             >

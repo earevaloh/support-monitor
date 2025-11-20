@@ -33,19 +33,19 @@ export class JiraMapper {
                 : undefined,
 
             // Calcular tiempos (en producción estos vendrían de campos customizados)
-            firstResponseTime: this.calculateFRT(fields),
+            firstResponseTime: this.calculateFRT(),
             resolutionTime: this.calculateResolutionTime(fields),
 
             // SLA (estos deberían venir de campos customizados de Jira)
-            slaCompliance: this.calculateSLACompliance(fields),
-            slaBreached: this.isSLABreached(fields),
+            slaCompliance: this.calculateSLACompliance(),
+            slaBreached: this.isSLABreached(),
 
             // Escalaciones
             escalated: this.isEscalated(fields),
             escalationCount: this.getEscalationCount(fields),
 
             // FCR
-            resolvedOnFirstContact: this.isResolvedOnFirstContact(fields),
+            resolvedOnFirstContact: this.isResolvedOnFirstContact(),
 
             customFields: this.extractCustomFields(fields),
         });
@@ -200,9 +200,7 @@ export class JiraMapper {
      * Calcula el First Response Time (simulado)
      * En producción esto vendría de un campo customizado o se calcularía con la API de comentarios
      */
-    private static calculateFRT(
-        fields: Record<string, unknown>
-    ): number | undefined {
+    private static calculateFRT(): number | undefined {
         // Simulación: retornar un valor aleatorio entre 10 y 240 minutos
         return Math.floor(Math.random() * 230) + 10;
     }
@@ -224,9 +222,7 @@ export class JiraMapper {
     /**
      * Calcula la calificación de SLA (simulado)
      */
-    private static calculateSLACompliance(
-        fields: Record<string, unknown>
-    ): number {
+    private static calculateSLACompliance(): number {
         // En producción esto vendría de campos customizados de Jira
         return Math.floor(Math.random() * 2) + 3; // 3-5 estrellas
     }
@@ -234,7 +230,7 @@ export class JiraMapper {
     /**
      * Verifica si el SLA fue violado
      */
-    private static isSLABreached(fields: Record<string, unknown>): boolean {
+    private static isSLABreached(): boolean {
         // En producción esto vendría de campos customizados
         return Math.random() > 0.85; // 15% de probabilidad
     }
@@ -259,9 +255,7 @@ export class JiraMapper {
     /**
      * Verifica si fue resuelto en primer contacto
      */
-    private static isResolvedOnFirstContact(
-        fields: Record<string, unknown>
-    ): boolean {
+    private static isResolvedOnFirstContact(): boolean {
         // En producción esto requeriría analizar el historial de comentarios
         return Math.random() > 0.5; // 50% de probabilidad para simulación
     }

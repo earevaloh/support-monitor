@@ -16,26 +16,36 @@ interface TicketCardProps {
  * Componente para mostrar una tarjeta de ticket
  */
 export const TicketCard: React.FC<TicketCardProps> = ({ ticket, onClick }) => {
-    const getPriorityColor = (priority: string): string => {
-        const colors = {
+    const getPriorityColor = (
+        priority: string
+    ): "blue" | "orange" | "yellow" | "green" | "cyan" | "red" | "violet" => {
+        const colors: Record<
+            string,
+            "blue" | "orange" | "yellow" | "green" | "cyan" | "red" | "violet"
+        > = {
             lowest: "green",
             low: "cyan",
             medium: "blue",
             high: "orange",
             highest: "red",
         };
-        return colors[priority as keyof typeof colors] || "blue";
+        return colors[priority] || "blue";
     };
 
-    const getStatusColor = (status: string): string => {
-        const colors = {
+    const getStatusColor = (
+        status: string
+    ): "blue" | "orange" | "yellow" | "green" | "cyan" | "red" | "violet" => {
+        const colors: Record<
+            string,
+            "blue" | "orange" | "yellow" | "green" | "cyan" | "red" | "violet"
+        > = {
             open: "blue",
             in_progress: "cyan",
             pending: "orange",
             resolved: "green",
-            closed: "gray",
+            closed: "cyan",
         };
-        return colors[status as keyof typeof colors] || "blue";
+        return colors[status] || "blue";
     };
 
     return (
@@ -118,7 +128,9 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, onClick }) => {
                 {/* SLA & Indicators */}
                 <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
                     <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">SLA:</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                            SLA:
+                        </span>
                         <div className="flex">
                             {[...Array(5)].map((_, i) => (
                                 <span
